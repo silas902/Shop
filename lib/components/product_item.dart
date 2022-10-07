@@ -13,6 +13,7 @@ class ProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final msg = ScaffoldMessenger.of(context);
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: NetworkImage(product.imageUrl),
@@ -40,7 +41,8 @@ class ProductItem extends StatelessWidget {
                   context: context,
                   builder: (ctx) => AlertDialog(
                     title: Text('Tem Certeza?'),
-                    content: Text('Que Deseja Excluir Este Produto: ${product.name}?'),
+                    content: Text(
+                        'Que Deseja Excluir Este Produto: ${product.name}?'),
                     actions: <Widget>[
                       TextButton(
                         child: Text('Não'),
@@ -51,14 +53,27 @@ class ProductItem extends StatelessWidget {
                       TextButton(
                         child: Text('Sim'),
                         onPressed: () {
-                          Provider.of<ProductList>(context, listen: false)
-                              .removeProduct(product);
-                          Navigator.of(ctx).pop();
+                          Navigator.of(context).pop(true);
                         },
                       ),
                     ],
                   ),
-                );
+                ).then((value) async {
+                  if (value ?? false) {
+                    try {
+                      await Provider.of<ProductList>(
+                        context,
+                        listen: false,
+                      ).removeProduct(product);
+                    } catch (error) {
+                      msg.showSnackBar(
+                        SnackBar(
+                          content: Text(error.toString()),
+                        ),
+                      );
+                    }
+                  }
+                });
               },
             )
           ],
